@@ -20,7 +20,8 @@ app = FastAPI()
 # ✅ CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173",
+                   "chat-bot-psi-gules.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -32,6 +33,10 @@ class Message(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: List[Message]  # ✅ full chat history
+
+@app.get("/")
+def root():
+    return {"status": "ok", "message": "Backend is running ✅"}
 
 @app.post("/chat-stream")
 def chat_stream(req: ChatRequest):
