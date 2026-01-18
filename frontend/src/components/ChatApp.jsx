@@ -53,6 +53,9 @@ export default function ChatApp() {
     import.meta.env.VITE_API_BASE_URL ||
     "https://chat-bot-backend-rk9u.onrender.com";
 
+    console.log("✅ BASE_URL:", BASE_URL);
+    console.log("✅ Full API URL:", `${BASE_URL}/chat-stream`);
+
   try {
     const res = await fetch(`${BASE_URL}/chat-stream`, {
       method: "POST",

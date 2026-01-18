@@ -7,6 +7,9 @@ from openai import OpenAI
 from sse_starlette.sse import EventSourceResponse
 import os, json
 
+from fastapi import Request
+from fastapi.responses import PlainTextResponse
+
 # Load .env locally (Render env vars also work)
 load_dotenv()
 
@@ -42,10 +45,9 @@ def root():
 
 
 # ✅ Fix preflight OPTIONS (very important for /chat-stream)
-@app.options("/chat-stream")
-def chat_stream_options():
-    return Response(status_code=200)
-
+@app.options("https://chat-bot-backend-rk9u.onrender.com/chat-stream")
+async def preflight_handler(full_path: str):
+    return PlainTextResponse("", status_code=200)
 
 @app.post("/chat-stream")
 def chat_stream(req: ChatRequest):
