@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Literal
@@ -7,7 +7,7 @@ from openai import OpenAI
 from sse_starlette.sse import EventSourceResponse
 import os, json
 
-# ✅ Load API KEY from .env
+# Load .env locally (Render env vars also work)
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -17,42 +17,48 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 
 app = FastAPI()
 
-# ✅ CORS
+# ✅ CORS (IMPORTANT)
+# Use "*" first to confirm it works, then you can lock to vercel domain later.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "https://chat-bot-psi-gules.vercel.app",
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],            # ✅ no CORS issue
+    allow_credentials=False,        # ✅ must be False when "*"
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# ✅ models
 class Message(BaseModel):
     role: Literal["user", "assistant"]
     content: str
 
 class ChatRequest(BaseModel):
-    messages: List[Message]  # ✅ full chat history
+    messages: List[Message]
+
 
 @app.get("/")
 def root():
     return {"status": "ok", "message": "Backend is running ✅"}
 
+
+# ✅ Fix preflight OPTIONS (very important for /chat-stream)
+@app.options("/chat-stream")
+def chat_stream_options():
+    return Response(status_code=200)
+
+
 @app.post("/chat-stream")
 def chat_stream(req: ChatRequest):
-
-    # ✅ Strong system prompt (ChatGPT style)
     messages = [
         {
             "role": "system",
             "content": (
                 "You are ChatGPT, a helpful assistant. "
-                "Use markdown formatting, be clear, friendly, and detailed."
+                "Use markdown formatting, be clear and friendly."
             )
         }
     ]
+
     messages += [{"role": m.role, "content": m.content} for m in req.messages]
 
     def event_generator():
@@ -71,6 +77,7 @@ def chat_stream(req: ChatRequest):
                     "data": json.dumps({"token": delta.content})
                 }
 
+        # ✅ stream finished
         yield {"event": "done", "data": "DONE"}
 
     return EventSourceResponse(event_generator())

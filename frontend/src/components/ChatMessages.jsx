@@ -7,11 +7,11 @@ export default function ChatMessages({ chats, loading, bottomRef }) {
         <div
           key={i}
           className={`px-4 text-base leading-loose items-center justify-between
-          rounded-xl ${
-  c.role === "user"
-    ? "ml-auto bg-gray-700 py-2 text-white rounded-full  w-fit"
-    : "mr-auto  text-slate-100 rounded-2xl w-full"
-}`}
+          rounded-xl shadow-md fade-in ${
+            c.role === "user"
+              ? "ml-auto bg-gray-700 py-2 text-white rounded-full  w-fit"
+              : "mr-auto  text-slate-100 rounded-2xl w-full"
+          }`}
         >
           <ReactMarkdown
             components={{
@@ -20,7 +20,6 @@ export default function ChatMessages({ chats, loading, bottomRef }) {
                   className="overflow-x-auto max-w-full whitespace-pre rounded-xl p-4 mt-10 mb-10 bg-black leading-6"
                   {...props}
                 />
-                
               ),
               code: ({ node, ...props }) => (
                 <code className="text-white leading-tight" {...props} />
@@ -33,7 +32,7 @@ export default function ChatMessages({ chats, loading, bottomRef }) {
       ))}
 
       {loading && (
-        <div className="mr-auto bg-slate-800 text-slate-100 px-4 py-3 rounded-2xl text-sm">
+        <div className="mr-auto bg-slate-800 text-slate-100 px-4 py-3 rounded-2xl text-sm fade-in">
           Typing...
         </div>
       )}

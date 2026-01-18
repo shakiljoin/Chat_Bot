@@ -49,7 +49,7 @@ shadow-[0_0_30px_rgba(168,85,247,0.55)]"
               placeholder="Ask me anything..."
               rows={1}
               className="border-none outline-none text-white bg-transparent px-4 py-2 rounded-lg
-                 resize-none min-h-10 max-h-40 grow overflow-y-auto w-full"
+                 resize-none min-h-10 max-h-40 grow overflow-y-auto w-full transition-all duration-300"
             />
 
             {/* <button
@@ -63,9 +63,9 @@ shadow-[0_0_30px_rgba(168,85,247,0.55)]"
             <button
               onClick={loading ? stopGenerating : sendMessage}
               className="shrink-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 mb-1 text-lg
-      text-white px-2 py-2 rounded-full flex items-center justify-center cursor-pointer transition-all duration-500"
+      text-white px-2 py-2 rounded-full flex items-center justify-center cursor-pointer transition-all duration-500 hover:opacity-80"
             >
-              {loading ?  <IoClose /> : <GoArrowRight /> }
+              {loading ? <IoClose /> : <GoArrowRight />}
             </button>
           </div>
         </div>
@@ -73,3 +73,4 @@ shadow-[0_0_30px_rgba(168,85,247,0.55)]"
     </div>
   );
 }
+

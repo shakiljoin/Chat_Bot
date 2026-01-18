@@ -30,96 +30,106 @@ export default function ChatApp() {
   };
 
   const sendMessage = async () => {
-    if (!message.trim() || loading) return;
+  if (!message.trim() || loading) return;
 
-    setInputAtBottom(true);
+  setInputAtBottom(true);
 
-    const userMsg = { role: "user", content: message };
-    const history = [...chats, userMsg].filter(
-      (m) => m.role === "user" || m.role === "assistant"
-    );
+  const userMsg = { role: "user", content: message };
+  const history = [...chats, userMsg].filter(
+    (m) => m.role === "user" || m.role === "assistant"
+  );
 
-    setChats((prev) => [...prev, userMsg]);
-    setMessage("");
-    setLoading(true);
+  setChats((prev) => [...prev, userMsg]);
+  setMessage("");
+  setLoading(true);
 
-    // add empty assistant message
-    setChats((prev) => [...prev, { role: "assistant", content: "" }]);
+  // add empty assistant message
+  setChats((prev) => [...prev, { role: "assistant", content: "" }]);
 
-    // ✅ create controller
-    const controller = new AbortController();
-    abortRef.current = controller;
-    const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://chat-bot-backend-rk9u.onrender.com";
+  const controller = new AbortController();
+  abortRef.current = controller;
 
+  const BASE_URL =
+    import.meta.env.VITE_API_BASE_URL ||
+    "https://chat-bot-backend-rk9u.onrender.com";
 
-    try {
-      const res = await fetch(`${BASE_URL}/chat-stream`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history }),
-        signal: controller.signal,
-      });
+  try {
+    const res = await fetch(`${BASE_URL}/chat-stream`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: history }),
+      signal: controller.signal,
+    });
 
-      const data = await res.json();
-      console.log(data.reply);
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`HTTP ${res.status}: ${errText}`);
+    }
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder("utf-8");
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder("utf-8");
 
-      let buffer = "";
-      let fullText = "";
+    let buffer = "";
+    let fullText = "";
 
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop();
+      buffer += decoder.decode(value, { stream: true });
 
-        for (const line of lines) {
-          if (line.startsWith("data:")) {
-            const data = line.replace("data:", "").trim();
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
 
-            if (data === "DONE") {
-              setLoading(false);
-              abortRef.current = null;
-              return;
-            }
+      for (const line of lines) {
+        if (!line.startsWith("data:")) continue;
 
-            try {
-              const parsed = JSON.parse(data);
-              if (parsed.token) {
-                fullText += parsed.token;
+        const data = line.replace("data:", "").trim();
 
-                setChats((prev) => {
-                  const updated = [...prev];
-                  updated[updated.length - 1] = {
-                    role: "assistant",
-                    content: fullText,
-                  };
-                  return updated;
-                });
-              }
-            } catch {}
+        if (data === "DONE") {
+          setLoading(false);
+          abortRef.current = null;
+          return;
+        }
+
+        try {
+          const parsed = JSON.parse(data);
+
+          if (parsed.token) {
+            fullText += parsed.token;
+
+            setChats((prev) => {
+              const updated = [...prev];
+              updated[updated.length - 1] = {
+                role: "assistant",
+                content: fullText,
+              };
+              return updated;
+            });
           }
+        } catch (e) {
+          // ignore parse errors
         }
       }
-
-      setLoading(false);
-      abortRef.current = null;
-    } catch (err) {
-      // ✅ when stop clicked
-      if (err.name === "AbortError") return;
-
-      setChats((prev) => [
-        ...prev,
-        { role: "assistant", content: "❌ Backend not connected!" },
-      ]);
-      setLoading(false);
-      abortRef.current = null;
     }
-  };
+
+    setLoading(false);
+    abortRef.current = null;
+  } catch (err) {
+    if (err.name === "AbortError") return;
+
+    console.error("❌ API ERROR:", err);
+
+    setChats((prev) => [
+      ...prev,
+      { role: "assistant", content: "❌ Backend not connected!" },
+    ]);
+
+    setLoading(false);
+    abortRef.current = null;
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
