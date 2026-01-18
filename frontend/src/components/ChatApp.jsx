@@ -49,7 +49,8 @@ export default function ChatApp() {
     // ✅ create controller
     const controller = new AbortController();
     abortRef.current = controller;
-    const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://chat-bot-backend-rk9u.onrender.com";
+
 
     try {
       const res = await fetch(`${BASE_URL}/chat-stream`, {
