@@ -49,9 +49,10 @@ export default function ChatApp() {
     // ✅ create controller
     const controller = new AbortController();
     abortRef.current = controller;
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/chat`, {
+      const res = await fetch(`${BASE_URL}/chat-stream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: history }),
