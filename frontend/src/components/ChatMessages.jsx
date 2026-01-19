@@ -33,7 +33,7 @@ export default function ChatMessages({ chats, loading, bottomRef }) {
 
       {loading && (
         <div className="mr-auto bg-slate-800 text-slate-100 px-4 py-3 rounded-2xl text-sm fade-in">
-          Typing...
+          Generating....
         </div>
       )}
 
