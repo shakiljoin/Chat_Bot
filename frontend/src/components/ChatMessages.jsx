@@ -32,9 +32,15 @@ export default function ChatMessages({ chats, loading, bottomRef }) {
       ))}
 
       {loading && (
-        <div className="mr-auto bg-slate-800 text-slate-100 px-4 py-3 rounded-2xl text-sm fade-in">
-          Generating....
-        </div>
+        <div className="mr-auto bg-slate-800 text-slate-100 px-4 py-3 rounded-2xl text-sm flex items-center gap-1">
+  <span>Generating</span>
+  <span className="flex gap-1">
+    <span className="w-1.5 h-1.5 bg-slate-100 rounded-full animate-bounce [animation-delay:0ms]" />
+    <span className="w-1.5 h-1.5 bg-slate-100 rounded-full animate-bounce [animation-delay:200ms]" />
+    <span className="w-1.5 h-1.5 bg-slate-100 rounded-full animate-bounce [animation-delay:400ms]" />
+  </span>
+</div>
+
       )}
 
       <div ref={bottomRef} />
